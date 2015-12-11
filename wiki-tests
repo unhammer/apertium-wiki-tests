@@ -40,7 +40,14 @@ fetchtests () {
 }
 
 cleantst () {
-    $SED 's/^ *//; s/ *$//; s/\([^,.?!:;]\)$/\1./g; s/   */ /g'
+    # Would use these, but printf on Mac doesn't support unicode
+    # names, so the below sed's use *literal* byte-order-marks and
+    # zero-width-spaces:
+    local bom=$(env printf "\uFEFF")
+    local zws=$(env printf "\u200B")
+    $SED 's/^ *//; s/ *$//; s/\([^,.?!:;]\)$/\1./g; s/   */ /g' \
+        | $SED -e "s/﻿//g" \
+        | $SED -e "s/​//g"
 }
 cleansrc () {
     local -r srclang=$1
