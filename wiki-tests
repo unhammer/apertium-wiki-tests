@@ -43,6 +43,14 @@ fetchtests () {
     fi
 }
 
+decodehtml() {
+    # Decodes the three HTML standard entities if they are part of the test,
+    # because even if they are not written as HTML entities in MediaWiki, they
+    # are rendered as such because we use the HTML rendering of the MediaWiki
+    # page as source.
+    sed -e "s/&amp;lt;/</g" -e "s/&amp;gt;/>/g" -e "s/&amp;/\&/g"
+}
+
 cleantst () {
     # Would use these, but printf on Mac doesn't support unicode
     # names, so the below sed's use *literal* byte-order-marks and
@@ -56,12 +64,12 @@ cleantst () {
 cleansrc () {
     local -r srclang=$1 trglang=$2
     local -r tdir="\\((${srclang})\\|(${srclang}-${trglang})\\)"
-    grep -o "<li> ${tdir}[^→]*" |$SED "s%</*[^>]*>%%g; s% *${tdir} *%%" | cleantst
+    grep -o "<li> ${tdir}[^→]*" |$SED "s%</*[^>]*>%%g; s% *${tdir} *%%" | cleantst | decodehtml
 }
 cleantrg () {
     local -r srclang=$1 trglang=$2
     local -r tdir="\\((${srclang})\\|(${srclang}-${trglang})\\)"
-    grep -o "<li> ${tdir}.*" | $SED 's%[^→]*→ *%%; s%::.*%%'  | cleantst
+    grep -o "<li> ${tdir}.*" | $SED 's%[^→]*→ *%%; s%::.*%%'  | cleantst | decodehtml
 }
 
 summary () {
